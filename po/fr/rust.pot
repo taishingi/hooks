@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-04 16:26+0100\n"
+"POT-Creation-Date: 2024-02-04 20:50+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -105,4 +105,9 @@ msgstr ""
 #: rust/pre-commit:43
 #, sh-format
 msgid "Do you want quit the script now ?"
+msgstr ""
+
+#: rust/pre-commit:44
+#, sh-format
+msgid "Do you want launch git tools now ?"
 msgstr ""

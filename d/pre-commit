@@ -30,7 +30,9 @@ BUILD_SUCCESS_MSG=$(eval_gettext $'Your code can be build')
 BUILD_FAILURE_MSG=$(eval_gettext $'Your code can\'t be build')
 CHECK_SUCCESS_MSG=$(eval_gettext $'Your code can be committed')
 CHECK_FAILURE_MSG=$(eval_gettext $'Your code can\'t be committed')
-
+SHOW_OUTPUT_MSG=$(eval_gettext $'Show the output ?')
+SHOW_QUIT_SCRIPT_MSG=$(eval_gettext $'Do you want quit the script now ?')
+OPEN_GIT_TOOLS_MSG=$(eval_gettext $'Do you want launch git tools now ?')
 
 
 SUCCESS_EXT="_${SUCCESS}.txt"
@@ -45,24 +47,16 @@ BUILD_FAILURE="${OUTPUT_DIR}/build${FAILURE_EXT}"
 
 if [ -z "$1" ]
 then
-    SUCCESS_TIME=5
-    FAILURE_TIME=20
     GENERATE_BADGE=false
 elif [ "$1" == "badges" ]
 then
     GENERATE_BADGE=true
-    SUCCESS_TIME=0
-    FAILURE_TIME=0
 else
-    SUCCESS_TIME=$1
-    FAILURE_TIME=$1
     GENERATE_BADGE=false
 fi
-
 function output {
-    local text="$2"
+    tput clear
     local b=""
-
     for (( i = 0; i < (COLUMNS); i++ ))
     do
         b+="="
@@ -71,11 +65,40 @@ function output {
     printf "\n%s\n" "$b"
     printf "\n%*s\n" $(((${#1}+COLUMNS)/2)) "$1"
     tput cuf 0
-    printf "\n%s\n\n" "$b"
-    sleep 2
-    cat "$3"
-    printf "\n%*s\n" $(((${#text}+COLUMNS)/2)) "$text"
-    read -r -s -t "$4"
+    printf "\n%s\n" "$b"
+    if [ "${SHOW_OUTPUT_AUTO}" == true ]
+    then
+      echo
+      cat "$2"
+      echo
+    else
+      echo
+      read -r -s -t 5 -p "${SHOW_OUTPUT_MSG} [Y/n] : " continuous
+      echo
+      case "${continuous}" in
+        y|""|Y)
+          echo
+          cat "$2"
+          echo
+          read -r -s -t 5 -p "${SHOW_QUIT_SCRIPT_MSG} [N/y] : " quit
+          echo
+          case "$quit" in
+            ""|n|N)
+              echo
+            ;;
+            y|Y)
+              exit 1
+            ;;
+          esac
+        ;;
+      n|N)
+         echo
+        ;;
+        *)
+          exit 1
+       ;;
+      esac
+  fi
 }
 
 
@@ -136,35 +159,59 @@ fi
 
 if [ ${LINT} == true ]
 then
-    output "${LINT_SUCCESS_MSG}" "waiting ${SUCCESS_TIME} secs" "${LINT_SUCCESS}" "${SUCCESS_TIME}"
+    output "${LINT_SUCCESS_MSG}" "${LINT_SUCCESS}"
 else
-    output "${LINT_FAILURE_MSG}" "waiting ${FAILURE_TIME} secs" "${LINT_FAILURE}" "${FAILURE_TIME}"
+    output "${LINT_FAILURE_MSG}" "${LINT_FAILURE}"
 fi
 
 if [ ${TESTS} == true ]
 then
-    output "${TESTS_SUCCESS_MSG}"  "${SUCCESS_TIME} secs" "${TESTS_SUCCESS}" "${SUCCESS_TIME}"
+    output "${TESTS_SUCCESS_MSG}"  "${TESTS_SUCCESS}"
 else
-    output "${TESTS_FAILURE_MSG}" "${FAILURE_TIME} secs" "${TESTS_FAILURE}" "${FAILURE_TIME}"
+    output "${TESTS_FAILURE_MSG}"  "${TESTS_FAILURE}"
 fi
 
 
 if [ ${BUILD} == true ]
 then
-    output "${BUILD_SUCCESS_MSG}"  "${SUCCESS_TIME} secs" "${TESTS_SUCCESS}" "${SUCCESS_TIME}"
+    output "${BUILD_SUCCESS_MSG}" "${TESTS_SUCCESS}"
 else
-    output "${BUILD_FAILURE_MSG}" "${FAILURE_TIME} secs" "${TESTS_FAILURE}" "${FAILURE_TIME}"
+    output "${BUILD_FAILURE_MSG}" "${TESTS_FAILURE}"
 fi
 
 
 if [ ${LINT} == true ] && [ ${BUILD} == true ] && [ ${TESTS} == true ]
 then
     tput clear
-    title="${CHECK_SUCCESS_MSG}"
-    printf "\n\n%*s\n" $(((${#title}+COLUMNS)/2)) "$title"
+    {
+      cat "${LINT_SUCCESS}"
+      cat "${BUILD_SUCCESS}"
+      cat "${TESTS_SUCCESS}"
+    } > "zuu/zuu.txt"
+
+    output "${CHECK_SUCCESS_MSG}" "zuu/zuu.txt"
+    if [ -d ".git" ]
+    then
+      tput clear
+      echo
+      read -r -s -t 5 -p "${OPEN_GIT_TOOLS_MSG} [N/y] : " t
+      case "${t}" in
+      y|Y)
+        lazygit
+      ;;
+      *)
+        exit 0
+      ;;
+      esac
+    fi
     exit 0
 else
-    title="${CHECK_FAILURE_MSG}"
-    printf "\n%*s\n" $(((${#title}+COLUMNS)/2)) "$title"
+    tput clear
+    {
+      cat "${LINT_FAILURE}"
+      cat "${BUILD_FAILURE}"
+      cat "${TESTS_FAILURE}"
+    } > "zuu/zuu.txt"
+    output "${CHECK_FAILURE_MSG}" "zuu/zuu.txt"
     exit 1
 fi

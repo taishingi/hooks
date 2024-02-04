@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-04 15:43+0100\n"
-"PO-Revision-Date: 2024-02-04 13:25+0100\n"
+"POT-Creation-Date: 2024-02-04 20:50+0100\n"
+"PO-Revision-Date: 2024-02-04 20:51+0100\n"
 "Last-Translator: Willy Micieli <micieli@vivaldi.net>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -67,3 +67,18 @@ msgstr "Votre code peut être enregistré"
 #, sh-format
 msgid "Your code can't be committed"
 msgstr "Votre code n'est pas valide il ne peux pas être enregistré"
+
+#: d/pre-commit:33
+#, sh-format
+msgid "Show the output ?"
+msgstr "Afficher la sortie ?"
+
+#: d/pre-commit:34
+#, sh-format
+msgid "Do you want quit the script now ?"
+msgstr "Voulez-vous quitter le script maintenant ?"
+
+#: d/pre-commit:35
+#, sh-format
+msgid "Do you want launch git tools now ?"
+msgstr "Voulez-vous lancer des outils git maintenant ?"
