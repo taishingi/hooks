@@ -1,5 +1,10 @@
 #!/usr/bin/bash
 
+export TEXTDOMAIN="d-zuu"
+export TEXTDOMAINDIR="/usr/share/locale"
+
+source /usr/bin/gettext.sh
+
 if [ -n "$GIT_DIR" ]
 then
   unset GIT_DIR
@@ -10,28 +15,35 @@ COLUMNS=$(tput cols)
 OUTPUT_DIR=zuu
 BADGES_DIR=badges
 BADGES_STYLES=('plastic' 'flat' 'flatsquare' 'forthebadge' 'social')
-SUCCESS="success"
-FAILURE="failure"
 
 LINT=false
 TESTS=false
 BUILD=false
+
+
+SUCCESS=$(eval_gettext $'success')
+FAILURE=$(eval_gettext $'failure')
+
+LINT_SUCCESS_MSG=$(gettext $'No errors detected')
+LINT_FAILURE_MSG=$(eval_gettext $'Errors detected')
+TESTS_SUCCESS_MSG=$(eval_gettext $'All tests passes')
+TESTS_FAILURE_MSG=$(eval_gettext $'Your tests contains failures')
+BUILD_SUCCESS_MSG=$(eval_gettext $'Your code can be build')
+BUILD_FAILURE_MSG=$(eval_gettext $'Your code can\'t be build')
+CHECK_SUCCESS_MSG=$(eval_gettext $'Your code can be committed')
+CHECK_FAILURE_MSG=$(eval_gettext $'Your code can\'t be committed')
+
+
 
 SUCCESS_EXT="_${SUCCESS}.txt"
 FAILURE_EXT="_${FAILURE}.txt"
 
 LINT_SUCCESS="${OUTPUT_DIR}/lint${SUCCESS_EXT}"
 LINT_FAILURE="${OUTPUT_DIR}/lint${FAILURE_EXT}"
-FORMAT_SUCCESS="${OUTPUT_DIR}/fmt${SUCCESS_EXT}"
-FORMAT_FAILURE="${OUTPUT_DIR}/fmt${FAILURE_EXT}"
-AUDIT_SUCCESS="${OUTPUT_DIR}/audit${SUCCESS_EXT}"
-AUDIT_FAILURE="${OUTPUT_DIR}/audit${FAILURE_EXT}"
-CLIPPY_SUCCESS="${OUTPUT_DIR}/clippy${SUCCESS_EXT}"
-CLIPPY_FAILURE="${OUTPUT_DIR}/clippy${FAILURE_EXT}"
 TESTS_SUCCESS="${OUTPUT_DIR}/tests${SUCCESS_EXT}"
 TESTS_FAILURE="${OUTPUT_DIR}/tests${FAILURE_EXT}"
-CHECK_SUCCESS="${OUTPUT_DIR}/check${SUCCESS_EXT}"
-CHECK_FAILURE="${OUTPUT_DIR}/check${FAILURE_EXT}"
+BUILD_SUCCESS="${OUTPUT_DIR}/build${SUCCESS_EXT}"
+BUILD_FAILURE="${OUTPUT_DIR}/build${FAILURE_EXT}"
 
 if [ -z "$1" ]
 then
@@ -94,7 +106,7 @@ then
     done
 fi
 
-if ! dub lint --quiet > ${LINT_SUCCESS} 2> ${LINT_FAILURE}
+if ! dub lint --quiet > "${LINT_SUCCESS}" 2> "${LINT_FAILURE}"
 then
     LINT=false
     badge "lint" "${FAILURE}"
@@ -103,7 +115,7 @@ else
     badge "lint" "${SUCCESS}"
 fi
 
-if ! dub test --force --quiet > ${TESTS_SUCCESS} 2> ${TESTS_FAILURE}
+if ! dub test --force --quiet > "${TESTS_SUCCESS}" 2> "${TESTS_FAILURE}"
 then
     TESTS=false
     badge "test" "${FAILURE}"
@@ -112,7 +124,7 @@ else
     badge "test" "${SUCCESS}"
 fi
 
-if ! dub build --force --quiet > ${TESTS_SUCCESS} 2> ${TESTS_FAILURE}
+if ! dub build --force --quiet > "${BUILD_SUCCESS}" 2> "${BUILD_FAILURE}"
 then
     BUILD=false
     badge "build" "${FAILURE}"
@@ -125,27 +137,35 @@ clear
 
 if [ ${LINT} == true ]
 then
-    output "Project is valid" "waiting ${SUCCESS_TIME} secs" "${LINT_SUCCESS}" "${SUCCESS_TIME}"
+    output "${LINT_SUCCESS_MSG}" "waiting ${SUCCESS_TIME} secs" "${LINT_SUCCESS}" "${SUCCESS_TIME}"
 else
-    output "Project not valid" "waiting ${FAILURE_TIME} secs" "${LINT_FAILURE}" "${FAILURE_TIME}"
+    output "${LINT_FAILURE_MSG}" "waiting ${FAILURE_TIME} secs" "${LINT_FAILURE}" "${FAILURE_TIME}"
 fi
 
 if [ ${TESTS} == true ]
 then
-    output "All tests passes"  "waiting ${SUCCESS_TIME} secs" "${TESTS_SUCCESS}" "${SUCCESS_TIME}"
+    output "${TESTS_SUCCESS_MSG}"  "${SUCCESS_TIME} secs" "${TESTS_SUCCESS}" "${SUCCESS_TIME}"
 else
-    output "Tests contains failure" "waiting ${FAILURE_TIME} secs" "${TESTS_FAILURE}" "${FAILURE_TIME}"
+    output "${TESTS_FAILURE_MSG}" "${FAILURE_TIME} secs" "${TESTS_FAILURE}" "${FAILURE_TIME}"
+fi
+
+
+if [ ${BUILD} == true ]
+then
+    output "${BUILD_SUCCESS_MSG}"  "${SUCCESS_TIME} secs" "${TESTS_SUCCESS}" "${SUCCESS_TIME}"
+else
+    output "${BUILD_FAILURE_MSG}" "${FAILURE_TIME} secs" "${TESTS_FAILURE}" "${FAILURE_TIME}"
 fi
 
 
 if [ ${LINT} == true ] && [ ${BUILD} == true ] && [ ${TESTS} == true ]
 then
     tput clear
-    title="The code can be committed"
+    title="${CHECK_SUCCESS_MSG}"
     printf "\n%*s\n" $(((${#title}+COLUMNS)/2)) "$title"
     exit 0
 else
-    title="The code is not valid"
+    title="${CHECK_FAILURE_MSG}"
     printf "\n%*s\n" $(((${#title}+COLUMNS)/2)) "$title"
     exit 1
 fi
