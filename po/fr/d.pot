@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-04 13:24+0100\n"
+"POT-Creation-Date: 2024-02-04 16:26+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,41 +27,42 @@ msgstr ""
 msgid "failure"
 msgstr ""
 
-#: d/pre-commit:26
+#: d/pre-commit:25
+#, sh-format
 msgid "No errors detected"
 msgstr ""
 
-#: d/pre-commit:27
+#: d/pre-commit:26
 #, sh-format
 msgid "Errors detected"
 msgstr ""
 
-#: d/pre-commit:28
+#: d/pre-commit:27
 #, sh-format
 msgid "All tests passes"
 msgstr ""
 
-#: d/pre-commit:29
+#: d/pre-commit:28
 #, sh-format
 msgid "Your tests contains failures"
 msgstr ""
 
-#: d/pre-commit:30
+#: d/pre-commit:29
 #, sh-format
 msgid "Your code can be build"
 msgstr ""
 
-#: d/pre-commit:31
+#: d/pre-commit:30
 #, sh-format
 msgid "Your code can't be build"
 msgstr ""
 
-#: d/pre-commit:32
+#: d/pre-commit:31
 #, sh-format
 msgid "Your code can be committed"
 msgstr ""
 
-#: d/pre-commit:33
+#: d/pre-commit:32
 #, sh-format
 msgid "Your code can't be committed"
 msgstr ""

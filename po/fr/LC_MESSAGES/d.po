@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-04 12:32+0100\n"
+"POT-Creation-Date: 2024-02-04 15:43+0100\n"
 "PO-Revision-Date: 2024-02-04 13:25+0100\n"
 "Last-Translator: Willy Micieli <micieli@vivaldi.net>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -28,41 +28,42 @@ msgstr "succès"
 msgid "failure"
 msgstr "échec"
 
-#: d/pre-commit:26
+#: d/pre-commit:25
+#, sh-format
 msgid "No errors detected"
 msgstr "Aucune erreurs détecté"
 
-#: d/pre-commit:27
+#: d/pre-commit:26
 #, sh-format
 msgid "Errors detected"
 msgstr "Des erreurs ont été détectées"
 
-#: d/pre-commit:28
+#: d/pre-commit:27
 #, sh-format
 msgid "All tests passes"
 msgstr "Tout les tests passes"
 
-#: d/pre-commit:29
+#: d/pre-commit:28
 #, sh-format
 msgid "Your tests contains failures"
 msgstr "Vos tests contiennent des échecs"
 
-#: d/pre-commit:30
+#: d/pre-commit:29
 #, sh-format
 msgid "Your code can be build"
 msgstr "Votre code peut être construit"
 
-#: d/pre-commit:31
+#: d/pre-commit:30
 #, sh-format
 msgid "Your code can't be build"
 msgstr "Votre code ne peut pas être construit"
 
-#: d/pre-commit:32
+#: d/pre-commit:31
 #, sh-format
 msgid "Your code can be committed"
 msgstr "Votre code peut être enregistré"
 
-#: d/pre-commit:33
+#: d/pre-commit:32
 #, sh-format
 msgid "Your code can't be committed"
 msgstr "Votre code n'est pas valide il ne peux pas être enregistré"

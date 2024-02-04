@@ -1,5 +1,10 @@
 #!/usr/bin/bash
 
+export TEXTDOMAIN="rust-zuu"
+export TEXTDOMAINDIR="/usr/share/locale"
+
+source /usr/bin/gettext.sh
+
 if [ -n "$GIT_DIR" ]
 then
   unset GIT_DIR
@@ -10,16 +15,42 @@ COLUMNS=$(tput cols)
 OUTPUT_DIR=zuu
 BADGES_DIR=badges
 BADGES_STYLES=('plastic' 'flat' 'flatsquare' 'forthebadge' 'social')
-SUCCESS="success"
-FAILURE="failure"
+
+SUCCESS=$(eval_gettext $'success')
+FAILURE=$(eval_gettext $'failure')
+
+CLIPPY_SUCCESS_MSG=$(eval_gettext $'Your code is clean')
+CLIPPY_FAILURE_MSG=$(eval_gettext $'Your code is not clean')
+
+FORMAT_SUCCESS_MSG=$(eval_gettext $'Your code is formatted properly')
+FORMAT_FAILURE_MSG=$(eval_gettext $'Your code is not formatted properly')
+
+VERIFY_SUCCESS_MSG=$(eval_gettext $'Your project is valid')
+VERIFY_FAILURE_MSG=$(eval_gettext $'Your project is not valid')
+
+TESTS_SUCCESS_MSG=$(eval_gettext $'All  tests passes')
+TESTS_FAILURE_MSG=$(eval_gettext $'Your tests contains failures')
+
+CHECK_SUCCESS_MSG=$(eval_gettext $'Your code not contains errors')
+CHECK_FAILURE_MSG=$(eval_gettext $'Your code contains errors')
+
+AUDIT_SUCCESS_MSG=$(eval_gettext $'Your code can be share')
+AUDIT_FAILURE_MSG=$(eval_gettext $'Your code contains warnings')
+
+SUCCESS_MSG=$(eval_gettext $'Your code can be committed')
+FAILURE_MSG=$(eval_gettext $'Your code can\'t be committed')
+SHOW_OUTPUT_MSG=$(eval_gettext $'Show the output ?')
+SHOW_QUIT_SCRIPT_MSG=$(eval_gettext $'Do you want quit the script now ?')
+OPEN_GIT_TOOLS_MSG=$(eval_gettext $'Do you want launch git tools now ?')
+
 FORMAT=false
 VERIFY=false
 AUDIT=false
 CLIPPY=false
 TESTS=false
 CHECK=false
-SUCCESS_EXT="_${SUCCESS}.txt"
-FAILURE_EXT="_${FAILURE}.txt"
+FAILURE_EXT="_failure.txt"
+SUCCESS_EXT="_success.txt"
 
 VERIFY_SUCCESS="${OUTPUT_DIR}/verify${SUCCESS_EXT}"
 VERIFY_FAILURE="${OUTPUT_DIR}/verify${FAILURE_EXT}"
@@ -40,18 +71,17 @@ then
 elif [ "$1" == "badges" ]
 then
     GENERATE_BADGE=true
-    SUCCESS_TIME=0
-    FAILURE_TIME=20
+elif [ "$1" == "-y" ]
+then
+    SHOW_OUTPUT_AUTO=true
 else
-    SUCCESS_TIME=$1
-    FAILURE_TIME=$1
+    SHOW_OUTPUT_AUTO=false
     GENERATE_BADGE=false
 fi
 
 function output {
-    local text="$2"
+    tput clear
     local b=""
-
     for (( i = 0; i < (COLUMNS); i++ ))
     do
         b+="="
@@ -60,10 +90,40 @@ function output {
     printf "\n%s\n" "$b"
     printf "\n%*s\n" $(((${#1}+COLUMNS)/2)) "$1"
     tput cuf 0
-    printf "\n%s\n\n" "$b"
-    cat "$3"
-    printf "\n%*s\n" $(((${#text}+COLUMNS)/2)) "$text"
-    read -r -s -t "$4"
+    printf "\n%s\n" "$b"
+    if [ "${SHOW_OUTPUT_AUTO}" == true ]
+    then
+      echo
+      cat "$2"
+      echo
+    else
+      echo
+      read -r -s -t 5 -p "${SHOW_OUTPUT_MSG} [Y/n] : " continuous
+      echo
+      case "${continuous}" in
+        y|""|Y)
+          echo
+          cat "$2"
+          echo
+          read -r -s -t 5 -p "${SHOW_QUIT_SCRIPT_MSG} [N/y] : " quit
+          echo
+          case "$quit" in
+            ""|n|N)
+              echo
+            ;;
+            y|Y)
+              exit 1
+            ;;
+          esac
+        ;;
+      n|N)
+         echo
+        ;;
+        *)
+          exit 1
+       ;;
+      esac
+  fi
 }
 
 
@@ -95,7 +155,7 @@ then
     done
 fi
 
-if ! cargo verify-project --quiet  > ${VERIFY_SUCCESS} 2> ${VERIFY_FAILURE}
+if ! cargo verify-project --quiet  >  "${VERIFY_SUCCESS}" 2> "${VERIFY_FAILURE}"
 then
     VERIFY=false
     badge "verify-project" "${FAILURE}"
@@ -104,7 +164,7 @@ else
     badge "verify-project" "${SUCCESS}"
 fi
 
-if ! cargo fmt --check  > ${FORMAT_SUCCESS}  2> ${FORMAT_FAILURE}
+if ! cargo fmt --check  > "${FORMAT_SUCCESS}"  2> "${FORMAT_FAILURE}"
 then
     FORMAT=false
     badge "fmt" "${FAILURE}"
@@ -114,7 +174,7 @@ else
 fi
 
 
-if ! cargo audit --color=never  > ${AUDIT_SUCCESS} 2> ${AUDIT_FAILURE}
+if ! cargo audit --color=never  > "${AUDIT_SUCCESS}" 2> "${AUDIT_FAILURE}"
 then
     AUDIT=false
     badge "audit" "${FAILURE}"
@@ -123,7 +183,7 @@ else
     badge "audit" "${SUCCESS}"
 fi
 
-if ! cargo clippy -- -F keyword_idents -F warnings -F let-underscore -F rust-2018-compatibility -F rust-2018-idioms  -F rust-2021-compatibility -F future-incompatible -F unused -F unused_crate_dependencies -F unused_extern_crates  -D unused_macro_rules -F unused_results -F unused_qualifications -F nonstandard-style -F macro_use_extern_crate -F absolute_paths_not_starting_with_crate -F ambiguous_glob_imports -F clippy::all -F clippy::perf -F clippy::pedantic -F clippy::style -F clippy::suspicious -F clippy::correctness -F clippy::nursery -F clippy::complexity -F clippy::cargo > ${CLIPPY_SUCCESS} 2> ${CLIPPY_FAILURE}
+if ! cargo clippy -- -F keyword_idents -F warnings -F let-underscore -F rust-2018-compatibility -F rust-2018-idioms  -F rust-2021-compatibility -F future-incompatible -F unused -F unused_crate_dependencies -F unused_extern_crates  -D unused_macro_rules -F unused_results -F unused_qualifications -F nonstandard-style -F macro_use_extern_crate -F absolute_paths_not_starting_with_crate -F ambiguous_glob_imports -F clippy::all -F clippy::perf -F clippy::pedantic -F clippy::style -F clippy::suspicious -F clippy::correctness -F clippy::nursery -F clippy::complexity -F clippy::cargo > "${CLIPPY_SUCCESS}" 2> "${CLIPPY_FAILURE}"
 then
     CLIPPY=false
     badge "clippy" "${FAILURE}"
@@ -132,7 +192,7 @@ else
     badge "clippy" "${SUCCESS}"
 fi
 
-if ! cargo test  > ${TESTS_SUCCESS} 2> ${TESTS_FAILURE}
+if ! cargo test  > "${TESTS_SUCCESS}" 2> "${TESTS_FAILURE}"
 then
     TESTS=false
     badge "test" "${FAILURE}"
@@ -141,7 +201,7 @@ else
     badge "test" "${SUCCESS}"
 fi
 
-if ! cargo check --quiet --all-targets  > ${CHECK_SUCCESS} 2> ${CHECK_FAILURE}
+if ! cargo check --quiet --all-targets  > "${CHECK_SUCCESS}" 2> "${CHECK_FAILURE}"
 then
     CHECK=false
     badge "check" "${FAILURE}"
@@ -150,63 +210,86 @@ else
     badge "check" "${SUCCESS}"
 fi
 
-clear
-
 if [ ${VERIFY} == true ]
 then
-    output "Project is valid" "waiting ${SUCCESS_TIME} secs" "${VERIFY_SUCCESS}" "${SUCCESS_TIME}"
+    output "${VERIFY_SUCCESS_MSG}" "${VERIFY_SUCCESS}"
 else
-    output "Project not valid" "waiting ${FAILURE_TIME} secs" "${VERIFY_FAILURE}" "${FAILURE_TIME}"
+    output "${VERIFY_FAILURE_MSG}" "${VERIFY_FAILURE}"
 fi
 
 if [ ${FORMAT} == true ]
 then
-    output "Source code format is valid"  "waiting ${SUCCESS_TIME} secs" "${FORMAT_SUCCESS}" "${SUCCESS_TIME}"
+    output "${FORMAT_SUCCESS_MSG}" "${FORMAT_SUCCESS}"
 else
-    output "Source code format contains error" "waiting ${FAILURE_TIME} secs" "${FORMAT_FAILURE}" "${FAILURE_TIME}"
+    output "${FORMAT_FAILURE_MSG}" "${FORMAT_FAILURE}"
 fi
 
 if [ ${AUDIT} == true ]
 then
-    output "Audit passes" "waiting ${SUCCESS_TIME} secs" "${AUDIT_SUCCESS}" "${SUCCESS_TIME}"
+    output "${AUDIT_SUCCESS_MSG}" "${AUDIT_SUCCESS}"
 else
-    output "Audit detect warnings" "waiting ${FAILURE_TIME} secs" "${AUDIT_FAILURE}" "${FAILURE_TIME}"
+    output "${AUDIT_FAILURE_MSG}" "${AUDIT_FAILURE}"
 fi
 
 if [ ${CLIPPY} == true ]
 then
-    output "Code is clean" "waiting ${SUCCESS_TIME} secs" "${CLIPPY_SUCCESS}" "${SUCCESS_TIME}"
+    output "${CLIPPY_SUCCESS_MSG}" "${CLIPPY_SUCCESS}"
 else
-    output "Code contains errors" "waiting ${FAILURE_TIME} secs" "${CLIPPY_FAILURE}" "${FAILURE_TIME}"
+    output "${CLIPPY_FAILURE_MSG}" "${CLIPPY_FAILURE}"
 fi
 
 if [ ${TESTS} == true ]
 then
-    output "All tests passes" "waiting ${SUCCESS_TIME} secs" "${TESTS_SUCCESS}" "${SUCCESS_TIME}"
+    output "${TESTS_SUCCESS_MSG}" "${TESTS_SUCCESS}"
 else
-    output "Tests contains failure" "waiting ${FAILURE_TIME} secs" "${TESTS_FAILURE}" "${FAILURE_TIME}"
+    output "${TESTS_FAILURE_MSG}" "${TESTS_FAILURE}"
 fi
 
 if [ ${CHECK} == true ]
 then
-    output "Code clean" "waiting ${SUCCESS_TIME} secs" "${CHECK_SUCCESS}" "${SUCCESS_TIME}"
+    output "${CHECK_SUCCESS_MSG}" "${CHECK_SUCCESS}"
 else
-    output "Code contains errors" "waiting ${FAILURE_TIME} secs" "${CHECK_FAILURE}" "${FAILURE_TIME}"
+    output "${CHECK_FAILURE_MSG}" "${CHECK_FAILURE}"
 fi
 
 if [ ${FORMAT} == true ] && [ ${VERIFY} == true ] && [ ${AUDIT} == true ] && [ ${CLIPPY} == true ]  && [ ${TESTS} == true ] && [ ${CHECK} == true ]
 then
     tput clear
-    title="The code can be committed"
-    printf "\n%*s\n" $(((${#title}+COLUMNS)/2)) "$title"
+    {
+      cat "${FORMAT_SUCCESS}"
+      cat "${VERIFY_SUCCESS}"
+      cat "${AUDIT_SUCCESS}"
+      cat "${CLIPPY_SUCCESS}"
+      cat "${TESTS_SUCCESS}"
+      cat "${CHECK_SUCCESS}"
+    } > "zuu/zuu.txt"
+
+    output "${SUCCESS_MSG}" "zuu/zuu.txt"
+    if [ -d ".git" ]
+    then
+      tput clear
+      echo
+      read -r -s -t 5 -p "${OPEN_GIT_TOOLS_MSG} [N/y] : " t
+      case "${t}" in
+      y|Y)
+        lazygit
+      ;;
+      *)
+        exit 0
+      ;;
+      esac
+    fi
     exit 0
 else
-    title="The code is not valid"
-    printf "\n%*s\n" $(((${#title}+COLUMNS)/2)) "$title"
-    if [ ${GENERATE_BADGE} == true ]
-    then
-      exit 0
-    else
-      exit 1
-    fi
+    {
+      cat "${FORMAT_FAILURE}"
+      cat "${VERIFY_FAILURE}"
+      cat "${AUDIT_FAILURE}"
+      cat "${CLIPPY_FAILURE}"
+      cat "${TESTS_FAILURE}"
+      cat "${CHECK_FAILURE}"
+    } > "zuu/zuu.txt"
+    tput clear
+    output "${FAILURE_MSG}" "zuu/zuu.txt"
+    exit 1
 fi

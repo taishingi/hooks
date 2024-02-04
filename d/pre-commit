@@ -20,11 +20,9 @@ LINT=false
 TESTS=false
 BUILD=false
 
-
 SUCCESS=$(eval_gettext $'success')
 FAILURE=$(eval_gettext $'failure')
-
-LINT_SUCCESS_MSG=$(gettext $'No errors detected')
+LINT_SUCCESS_MSG=$(eval_gettext $'No errors detected')
 LINT_FAILURE_MSG=$(eval_gettext $'Errors detected')
 TESTS_SUCCESS_MSG=$(eval_gettext $'All tests passes')
 TESTS_FAILURE_MSG=$(eval_gettext $'Your tests contains failures')
@@ -47,6 +45,8 @@ BUILD_FAILURE="${OUTPUT_DIR}/build${FAILURE_EXT}"
 
 if [ -z "$1" ]
 then
+    SUCCESS_TIME=5
+    FAILURE_TIME=20
     GENERATE_BADGE=false
 elif [ "$1" == "badges" ]
 then
@@ -72,6 +72,7 @@ function output {
     printf "\n%*s\n" $(((${#1}+COLUMNS)/2)) "$1"
     tput cuf 0
     printf "\n%s\n\n" "$b"
+    sleep 2
     cat "$3"
     printf "\n%*s\n" $(((${#text}+COLUMNS)/2)) "$text"
     read -r -s -t "$4"
@@ -133,8 +134,6 @@ else
     badge "build" "${SUCCESS}"
 fi
 
-clear
-
 if [ ${LINT} == true ]
 then
     output "${LINT_SUCCESS_MSG}" "waiting ${SUCCESS_TIME} secs" "${LINT_SUCCESS}" "${SUCCESS_TIME}"
@@ -162,7 +161,7 @@ if [ ${LINT} == true ] && [ ${BUILD} == true ] && [ ${TESTS} == true ]
 then
     tput clear
     title="${CHECK_SUCCESS_MSG}"
-    printf "\n%*s\n" $(((${#title}+COLUMNS)/2)) "$title"
+    printf "\n\n%*s\n" $(((${#title}+COLUMNS)/2)) "$title"
     exit 0
 else
     title="${CHECK_FAILURE_MSG}"
