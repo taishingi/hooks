@@ -1,0 +1,2 @@
+dub lint
+dub test --force

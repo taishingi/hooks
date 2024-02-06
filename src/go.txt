@@ -1,0 +1,7 @@
+go mod verify
+go build
+go vet
+go doc
+go test -v -bench . -cover -failfast
+go install
+
