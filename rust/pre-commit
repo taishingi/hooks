@@ -80,9 +80,9 @@ do
 	code=$?
 	if [ $code -eq 0 ]
 	then
-	    echo -ne "\\r[ 👌 ] ${STEPS[$i]}\\n"
+	    echo -ne "\\r[  ] ${STEPS[$i]}\\n"
 	else
-	    echo -ne "\\r[ ☢️  ] ${STEPS[$i]}\\n"
+	    echo -ne "\\r[  ] ${STEPS[$i]}\\n"
 	fi
 	CODE+=($code)
 done
@@ -95,5 +95,5 @@ do
 	fi
 done
 
-echo -ne "\\r[ 🙏 ] Congratulations\n"
+echo -ne "\\r[   ] Congratulations\n"
 exit 0
