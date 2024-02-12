@@ -1,9 +1,98 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 
 if [ -n "$GIT_DIR" ]
 then
   unset GIT_DIR
 fi
 
-parallel  --use-cpus-instead-of-cores --halt now,fail=1  < /usr/share/zuu/rust.txt
+LINES=$(tput lines)
+COLUMNS=$(tput cols)
+BADGES_DIR=badges
+BADGES_STYLES=('plastic' 'flat' 'flatsquare' 'forthebadge' 'social')
+CODE=()
+STEPS=('Verify project' 'Format' 'Audit' 'Clippy' 'Test' 'Check')
+COMMANDS=('cargo verify-project --quiet' 'cargo fmt --check' 'cargo audit --color=never' 'cargo clippy -- -F keyword_idents -F warnings -F let-underscore -F rust-2018-compatibility -F rust-2018-idioms  -F rust-2021-compatibility -F future-incompatible -F unused -F unused_crate_dependencies -F unused_extern_crates  -D unused_macro_rules -F unused_results -F unused_qualifications -F nonstandard-style -F macro_use_extern_crate -F absolute_paths_not_starting_with_crate -F ambiguous_glob_imports -F clippy::all -F clippy::perf -F clippy::pedantic -F clippy::style -F clippy::suspicious -F clippy::correctness -F clippy::nursery -F clippy::complexity -F clippy::cargo' 'cargo test' 'cargo check --quiet --all-targets')
 
+SIZE=$((${#STEPS[@]} - 1))
+
+
+set_spinner() {
+  case $1 in
+    1)
+      FRAME=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+      FRAME_INTERVAL=0.1
+      ;;
+    2)
+      FRAME=("-" "\\" "|" "/")
+      FRAME_INTERVAL=0.25
+      ;;
+    3)
+      FRAME=("◐" "◓" "◑" "◒")
+      FRAME_INTERVAL=0.5
+      ;;
+    4)
+      FRAME=("⚬" "⚭" "⚮" "⚯")
+      FRAME_INTERVAL=0.25
+      ;;
+    5)
+      FRAME=("❤" "♥" "♡")
+      FRAME_INTERVAL=0.15
+      ;;
+    6)
+      FRAME=("✧" "☆" "★" "✪" "◌" "✲")
+      FRAME_INTERVAL=0.1
+      ;;
+    7)
+      FRAME=("●" "◕" "☯" "◔" "◕")
+      FRAME_INTERVAL=0.25
+      ;;
+    8)
+      FRAME=("✤" "✥" "✣")
+      FRAME_INTERVAL=0.15
+      ;;
+    *)
+      echo "No spinner is defined for $1"
+      exit 1
+  esac
+}
+
+spin() {
+    tput civis
+    echo -ne "\\r[    ] ${1}"
+    for k in "${!FRAME[@]}"; do
+        echo -ne "\\r[ ${FRAME[k]}  ]"
+	sleep $FRAME_INTERVAL
+    done
+    tput cnorm
+}
+
+
+set_spinner "$1"
+
+for i in $(seq 0 $SIZE)
+do
+	mkdir -p "zuu/${STEPS[$i]}"
+	${COMMANDS[$i]} > "zuu/${STEPS[$i]}/stdout" 2>  "zuu/${STEPS[$i]}/stderr" & 
+	pid=$!
+	spin "${STEPS[$i]}"	
+	wait $pid
+	code=$?
+	if [ $code -eq 0 ]
+	then
+	    echo -ne "\\r[ 👌 ] ${STEPS[$i]}\\n"
+	else
+	    echo -ne "\\r[ ☢️ ] ${STEPS[$i]}\\n"
+	fi
+	CODE+=($code)
+done
+
+for x in "${CODE[@]}" 
+do
+	if [ $x -ne 0 ]
+	then
+	    exit 1
+	fi
+done
+
+echo -ne "\\r[ 🙏 ] Congratulations\n"
+exit 0
