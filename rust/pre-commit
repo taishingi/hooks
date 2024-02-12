@@ -51,8 +51,9 @@ set_spinner() {
       FRAME_INTERVAL=0.15
       ;;
     *)
-      echo "No spinner is defined for $1"
-      exit 1
+      echo "No spinner is defined for $1 use spinner 1"
+      FRAME=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+      FRAME_INTERVAL=0.1
   esac
 }
 
@@ -81,7 +82,7 @@ do
 	then
 	    echo -ne "\\r[ 👌 ] ${STEPS[$i]}\\n"
 	else
-	    echo -ne "\\r[ ☢️ ] ${STEPS[$i]}\\n"
+	    echo -ne "\\r[ ☢️  ] ${STEPS[$i]}\\n"
 	fi
 	CODE+=($code)
 done
